@@ -1,0 +1,36 @@
+name: Draft release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+  draft:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: MediaLens-universal-DMG
+          path: dist
+      - name: Create or refresh draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --json isDraft > release-state.json 2>/dev/null; then
+            test "$(jq -r .isDraft release-state.json)" = true || { echo 'Published release will not be overwritten'; exit 1; }
+            gh release upload "$RELEASE_TAG" dist/MediaLens.dmg dist/MediaLens.dmg.sha256 --clobber
+            gh release edit "$RELEASE_TAG" --title "MediaLens $RELEASE_TAG" --notes-file docs/release-notes.md
+          else
+            gh release create "$RELEASE_TAG" dist/MediaLens.dmg dist/MediaLens.dmg.sha256 --draft --verify-tag --title "MediaLens $RELEASE_TAG" --notes-file docs/release-notes.md
+          fi

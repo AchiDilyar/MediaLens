@@ -1,0 +1,31 @@
+# Swift build and IDE state
+.build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Generated applications, icons and release archives
+dist/
+output/
+
+# Local files
+.DS_Store
+.env
+.env.*
+!.env.example
+*.log
+
+# Local icon design workspace; keep only Assets/AppIcon.png for reproducible builds
+Assets/AppIcon/
+scripts/export-icon.sh
+docs/images/app-icon.png
+
+# Distribution files never belong in Git history
+*.app/
+*.dmg
+*.dmg.sha256
+*.zip
+*.zip.sha256
+*.icns
+*.iconset/
